@@ -1,11 +1,27 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Badge,
+  Container,
+  Box,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchBar from '../features/search/SearchBar';
 import { ROUTES } from '../../routes/routeConfig';
 
 const Header = () => {
-  // Cart count - abhi ke liye placeholder, baad mein Redux se ayega
-  const cartCount = 0;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const cartItems = useSelector(state => state.cart.items);
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const navLinks = [
     { path: ROUTES.MEN, label: 'Men' },
@@ -14,60 +30,71 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'white' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ gap: 2 }}>
           {/* Logo */}
-          <Link to={ROUTES.HOME} className="text-2xl font-bold text-gray-800">
-            FASHION<span className="text-blue-600">STORE</span>
-          </Link>
+          <Typography
+            variant="h6"
+            component={Link}
+            to={ROUTES.HOME}
+            sx={{
+              textDecoration: 'none',
+              color: 'text.primary',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            FASHION
+            <Typography component="span" color="primary" variant="h6" fontWeight="bold">
+              STORE
+            </Typography>
+          </Typography>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={({ isActive }) => 
-                  `text-sm font-medium transition-colors hover:text-blue-600
-                  ${isActive ? 'text-blue-600' : 'text-gray-700'}`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+          {/* Search Bar - Full width on desktop */}
+          <Box sx={{ flexGrow: 1, maxWidth: 600, mx: 2 }}>
+            <SearchBar />
+          </Box>
 
-          {/* Right side - Search and Cart */}
-          <div className="flex items-center space-x-4">
-            {/* Search - temporary, will be replaced with component */}
-            <Link 
-              to={ROUTES.SEARCH} 
-              className="p-2 text-gray-600 hover:text-blue-600"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </Link>
+          {/* Navigation - Desktop */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {navLinks.map((link) => (
+                <Button
+                  key={link.path}
+                  component={NavLink}
+                  to={link.path}
+                  color="inherit"
+                  sx={{
+                    '&.active': {
+                      color: 'primary.main',
+                      fontWeight: 'bold'
+                    }
+                  }}
+                >
+                  {link.label}
+                </Button>
+              ))}
+            </Box>
+          )}
 
-            {/* Cart */}
-            <Link 
-              to={ROUTES.CART} 
-              className="p-2 text-gray-600 hover:text-blue-600 relative"
-            >
-              <ShoppingCartIcon className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white 
-                  text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>
-      </div>
-    </header>
+          {/* Cart Icon */}
+          <IconButton component={Link} to={ROUTES.CART} color="inherit">
+            <Badge badgeContent={cartCount} color="primary">
+              <ShoppingCartIcon />
+            </Badge>
+          </IconButton>
+
+          {/* Mobile Menu Icon */}
+          {isMobile && (
+            <IconButton color="inherit">
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 };
 
