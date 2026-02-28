@@ -173,6 +173,8 @@ const SearchPage = () => {
             ))}
           </Grid>
 
+
+
           {/* Pagination */}
           {total > limit && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
