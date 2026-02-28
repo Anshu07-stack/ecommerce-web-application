@@ -40,13 +40,16 @@ export const getSectionFetchStrategy = (section) => {
         endpoint: 'multiple-categories' // Multiple categories fetch karni hain
       };
       
+
+
     case 'WOMEN':
       return {
         type: 'CATEGORIES',
         categories: WOMEN_CATEGORIES,
         endpoint: 'multiple-categories'
       };
-      
+
+            
     case 'KIDS':
       return {
         type: 'SEARCH',
