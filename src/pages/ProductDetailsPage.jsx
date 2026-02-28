@@ -7,8 +7,11 @@ import { showNotification } from '../slices/uiSlice';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
