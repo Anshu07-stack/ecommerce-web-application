@@ -1,39 +1,24 @@
+// toast notifications and dark/light mode toggle
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
-  loading: {},
-  cartDrawer: false,
-  notification: null
-};
+const savedMode = localStorage.getItem('ca_theme') || 'light';
 
 const uiSlice = createSlice({
   name: 'ui',
-  initialState,
+  initialState: {
+    snackbar: null,        // { message, severity }
+    themeMode: savedMode,  // 'dark' | 'light'
+  },
   reducers: {
-    setLoading: (state, action) => {
-      const { key, isLoading } = action.payload;
-      state.loading[key] = isLoading;
+    showSnackbar(state, { payload }) {
+      state.snackbar = payload;
     },
-    
-    toggleCartDrawer: (state) => {
-      state.cartDrawer = !state.cartDrawer;
+    toggleTheme(state) {
+      state.themeMode = state.themeMode === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('ca_theme', state.themeMode);
     },
-    
-    showNotification: (state, action) => {
-      state.notification = action.payload;
-    },
-    
-    hideNotification: (state) => {
-      state.notification = null;
-    }
-  }
+  },
 });
 
-export const { 
-  setLoading, 
-  toggleCartDrawer, 
-  showNotification, 
-  hideNotification 
-} = uiSlice.actions;
-
+export const { showSnackbar, toggleTheme } = uiSlice.actions;
 export default uiSlice.reducer;
