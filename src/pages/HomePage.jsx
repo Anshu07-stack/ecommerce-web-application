@@ -135,7 +135,7 @@ const HomePage = () => {
               {/* Eyebrow pill */}
               <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'5px 14px', borderRadius:999, background:'rgba(201,169,110,0.1)', border:'1px solid rgba(201,169,110,0.22)', marginBottom:22 }}>
                 <span className="pulse-dot" />
-                <span style={{ color:GOLD, fontSize:'0.68rem', fontWeight:600, letterSpacing:'0.15em', textTransform:'uppercase', fontFamily:'"DM Sans",sans-serif' }}>New Season · 2025</span>
+                <span style={{ color:GOLD, fontSize:'0.68rem', fontWeight:600, letterSpacing:'0.15em', textTransform:'uppercase', fontFamily:'"DM Sans",sans-serif' }}>New Season · 2026</span>
               </div>
 
               {/* Main headline */}
