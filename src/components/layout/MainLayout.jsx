@@ -1,20 +1,22 @@
+import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 
 const MainLayout = () => {
+  const isDark = useSelector(s => s.ui.themeMode) === 'dark';
   return (
-    <div className="flex flex-col min-h-screen">
+    <div style={{
+      display:'flex', flexDirection:'column', minHeight:'100vh',
+      background: isDark ? '#0A0806' : '#FDFAF4',
+      transition: 'background 0.3s ease',
+    }}>
       <Header />
-      
-      {/* Main content area */}
-      <main className="grow container mx-auto px-4 py-8">
-        <Outlet /> {/* Yahan par pages render honge */}
+      <main style={{ flexGrow:1 }}>
+        <Outlet />
       </main>
-      
       <Footer />
     </div>
   );
 };
-
 export default MainLayout;
