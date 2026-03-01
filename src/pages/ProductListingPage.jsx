@@ -1,110 +1,80 @@
-// Main product listing page jo sab use karega
-
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useProducts } from '../hooks/useProducts';
-import ProductGrid from '../components/features/product/ProductGrid';
-import ProductSkeleton from '../components/features/product/ProductSkeleton';
-import Pagination from '../components/features/product/Pagination';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Container, Box, Typography, Alert, Button } from '@mui/material';
+import productService from '../services/productService';
+import useProducts    from '../hooks/useProducts';
+import ProductGrid    from '../components/features/product/ProductGrid';
 
-const ProductListingPage = ({ category, section }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [currentPage, setCurrentPage] = useState(1);
+const GOLD = '#C9A96E';
 
-  // URL se page number lo
+const ProductListingPage = ({ title, categories }) => {
+  const { name }  = useParams();
+  const isDark    = useSelector(s => s.ui.themeMode) === 'dark';
+  const pageTitle = title || name?.replace(/-/g,' ');
+
+  const [multiProducts, setMultiProducts] = useState([]);
+  const [multiLoading,  setMultiLoading]  = useState(false);
+  const [multiError,    setMultiError]    = useState(null);
+
   useEffect(() => {
-    const page = parseInt(searchParams.get('page')) || 1;
-    setCurrentPage(page);
-  }, [searchParams]);
+    if (!categories) return;
+    setMultiProducts([]); setMultiLoading(true); setMultiError(null);
+    Promise.all(
+      categories.map(cat => productService.getByCategory(cat).then(r => r.products).catch(() => []))
+    )
+      .then(results => setMultiProducts(results.flat()))
+      .catch(() => setMultiError('Failed to load products.'))
+      .finally(() => setMultiLoading(false));
+  }, [categories]);
 
-  // Custom hook use karo
-  const {
-    products,
-    loading,
-    error,
-    total,
-    hasMore
-  } = useProducts(category, null, currentPage); // Hook ko update karna hoga
-
-  // Total pages calculate karo
-  const totalPages = Math.ceil(total / 12);
-
-  // Page change handler
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    setSearchParams({ page: newPage });
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Loading state
-  if (loading && products.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">
-          {section ? `${section} Collection` : category ? category : 'All Products'}
-        </h1>
-        <ProductSkeleton />
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-          <p>Error: {error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const { products, loading, error } = useProducts({ category: categories ? null : name });
+  const displayProducts = categories ? multiProducts : products;
+  const isLoading       = categories ? multiLoading  : loading;
+  const displayError    = categories ? multiError    : error;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          {section ? `${section} Collection` : category ? category : 'All Products'}
-        </h1>
-        <p className="text-gray-600 mt-1">
-          {total} products found
-        </p>
+    <div style={{ overflowX:'hidden', background: isDark ? '#0A0806' : '#FDFAF4', minHeight:'100vh' }}>
+
+      {/* Page header banner */}
+      <div style={{
+        background: isDark
+          ? 'linear-gradient(135deg,#0A0806 0%,#1C1710 100%)'
+          : 'linear-gradient(135deg,#0E0C0A 0%,#1C1710 100%)',
+        padding:'48px 24px 40px', position:'relative', overflow:'hidden',
+      }}>
+        <div style={{ position:'absolute', top:'-20%', right:'-5%', width:280, height:280, background:'radial-gradient(ellipse,rgba(201,169,110,0.12) 0%,transparent 65%)', borderRadius:'50%', pointerEvents:'none' }} />
+        <div style={{ maxWidth:1280, margin:'0 auto', position:'relative' }}>
+          <p style={{ color:GOLD, fontSize:'0.65rem', fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', fontFamily:'"DM Sans",sans-serif', marginBottom:8 }}>Collections</p>
+          <h1 style={{ fontFamily:'"Cormorant Garamond",serif', fontWeight:700, fontSize:'clamp(1.8rem,4vw,3rem)', color:'#F7F4EE', textTransform:'capitalize', lineHeight:1.1 }}>
+            {pageTitle}
+          </h1>
+        </div>
       </div>
 
-      {/* Products Grid */}
-      <ProductGrid products={products} />
-
-      {/* Loading more indicator */}
-      {loading && products.length > 0 && (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      )}
-
-      {/* No results */}
-      {!loading && products.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No products found in this category.</p>
-        </div>
-      )}
+      <Container maxWidth="xl" sx={{ py:{ xs:3, md:5 } }}>
+        {isLoading && (
+          <Box sx={{ display:'flex', justifyContent:'center', py:8 }}>
+            <div className="loader-ring" />
+          </Box>
+        )}
+        {!isLoading && displayError && (
+          <Alert severity="error"
+            action={<Button size="small" onClick={() => window.location.reload()}>Retry</Button>}
+            sx={{ borderRadius:'10px', fontFamily:'"DM Sans",sans-serif' }}>
+            {displayError}
+          </Alert>
+        )}
+        {!isLoading && !displayError && (
+          <>
+            <Typography sx={{ color:'text.secondary', fontSize:'0.82rem', mb:2.5, fontFamily:'"DM Sans",sans-serif' }}>
+              {displayProducts.length} products
+            </Typography>
+            <ProductGrid products={displayProducts} />
+          </>
+        )}
+      </Container>
     </div>
   );
 };
-
 export default ProductListingPage;
